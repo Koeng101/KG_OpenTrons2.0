@@ -24,7 +24,7 @@ def OT2_plate(rxns, per_plate=24):
 
     ### Pickup tips ###
     pipette.set_pick_up_current(0.8)
-    pipette.pick_up_tip()
+    pipette.pick_up_tip(tiprack)
 
     ###
     def wash_tip(wash_liquid=wash_liquid):
@@ -44,7 +44,7 @@ def OT2_plate(rxns, per_plate=24):
         pipette.transfer(dilution_vol, LB, transformation_row, new_tip='never')
         pipette.mix(2)
 
-    def plate_row(transformation_row, agar_plate_row, plate_vol=7.5, dilution_vol=9):
+    def plate(transformation_row, agar_plate_row, plate_vol=7.5, dilution_vol=9):
         pipette.aspirate(dilution_vol, transformation_row)
         pipette.move_to(agar_plate_row.bottom(20))
         pipette.blow_out()
@@ -53,7 +53,7 @@ def OT2_plate(rxns, per_plate=24):
 
     def plate_to_wash(transformation_row, agar_plate_row, LB=LB, trash_liquid=trash_liquid, wash_liquid=wash_liquid):
         dilute_well(transformation_row, LB)
-        plate_row(transformation_row, agar_plate_row)
+        plate(transformation_row, agar_plate_row)
         ditch_liquid(trash_liquid)
         wash_tip(wash_liquid)
 
@@ -61,8 +61,9 @@ def OT2_plate(rxns, per_plate=24):
         # Counter has 3 values: [0,1,2]. Thesse are how row_plate can skip sections that are done.
         counter *= 4
         for agar_well in range(num_dilutions):
-            agar_well += counter
-            plate_to_wash(transformation_row, agar_plate(agar_well), LB, trash_liquid, wash_liquid)
+            well_label = "A" + str((agar_well + 1) + counter)
+            print("Plating transformation row {} to agar plate {} well {}".format(transformation_row, agar_plate, well_label))
+            plate_to_wash(transformation_row, agar_plate.wells(well_label), LB, trash_liquid, wash_liquid)
 
     ### For loop setup
     counter = 0
@@ -71,13 +72,16 @@ def OT2_plate(rxns, per_plate=24):
 
     ### Plate procedure
     for rows in range(transformation_rows):
-        counter += 1
-        plate_row(transformation(str(rows + 1)), agar_plate, counter=rows)
-        if counter % (num_dilutions - 1) == 0:
+        transformation_row = "A" + str(rows + 1)
+        print("Plating row",transformation_row)
+        if (counter + 1) % num_dilutions == 0:
+            counter = 0
             agar_counter += 1
             agar_plate = agar_plates[agar_counter]
-    
+        plate_row(transformation.wells(transformation_row), agar_plate, counter=counter)
+        counter += 1
+
     ### Drop tips
-    pipette.drop_tip(trash)
+    pipette.drop_tip()
 
 OT2_plate(48)
