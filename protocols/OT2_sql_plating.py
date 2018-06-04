@@ -11,6 +11,8 @@ def OT2_plate(rxns, per_plate=24):
     num_dilutions = 4
 
     ### Bot setup ###
+    robot.home()
+    robot.connect()
     tiprack = labware.load('tiprack-10ul', '11')
     transformation = labware.load('96-flat', '10')
     trash_liquid = labware.load('trough-1row-25ml', '9')
